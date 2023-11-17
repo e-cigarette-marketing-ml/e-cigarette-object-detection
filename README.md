@@ -1,2 +1,3 @@
 # e-cigarette-object-detection
-Manuscript under review
+
+Files will be uploaded in January 2024 when Chris returns from paternity leave.
