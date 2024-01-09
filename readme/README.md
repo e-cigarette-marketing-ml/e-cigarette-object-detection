@@ -1,6 +1,6 @@
 
-<a href="readme/vaping-demo.gif"
-data-fig-alt="Vaping computer vision demo"></a>
+<img src="readme/vaping-demo.gif"
+data-fig-alt="Vaping computer vision demo" />
 
 # Scalable Surveillance of E-Cigarette Products on Instagram and TikTok Using Computer Vision
 
