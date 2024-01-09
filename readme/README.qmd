@@ -12,7 +12,9 @@ project:
   execute-dir: project
 ---
 
-![](readme/vaping-demo.gif){fig-alt="Vaping computer vision demo"}
+::: {.column-margin}
+![](readme/vaping-demo.gif){fig-alt="Vaping computer vision demo" fig-align="right"}
+:::
 
 # Scalable Surveillance of E-Cigarette Products on Instagram and TikTok Using Computer Vision
 
