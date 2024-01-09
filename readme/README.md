@@ -1,4 +1,7 @@
 
+<a href="readme/vaping-demo.gif"
+data-fig-alt="Vaping computer vision demo"></a>
+
 # Scalable Surveillance of E-Cigarette Products on Instagram and TikTok Using Computer Vision
 
 This repository contains the annotation guidelines and source code used

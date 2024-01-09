@@ -12,6 +12,8 @@ project:
   execute-dir: project
 ---
 
+[](readme/vaping-demo.gif){fig-alt="Vaping computer vision demo"}
+
 # Scalable Surveillance of E-Cigarette Products on Instagram and TikTok Using Computer Vision
 
 This repository contains the annotation guidelines and source code used for @vassey2023.
@@ -23,6 +25,5 @@ Our annotation guidelines are available as a [word document here](Annotation_gui
 ## Model weights
 
 Trained model weights are uploaded to [HuggingFace hub here](https://huggingface.co/e-cigarette-marketing-ml/e-cigarette-object-detection/tree/main).
-
 
 ## References
