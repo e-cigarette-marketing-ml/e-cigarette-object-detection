@@ -6,12 +6,13 @@ for Vassey et al. ([2023](#ref-vassey2023)).
 
 ## Annotation guidelines
 
-Our annotation guidelines as available as a [word document
+Our annotation guidelines are available as a [word document
 here](Annotation_guide_ecigarette_objects.docx).
 
-## Model
+## Model weights
 
-Our trained model will be uploaded to HuggingFace for use.
+Trained model weights are uploaded to [HuggingFace hub
+here](https://huggingface.co/e-cigarette-marketing-ml/e-cigarette-object-detection/tree/main).
 
 ## References
 
