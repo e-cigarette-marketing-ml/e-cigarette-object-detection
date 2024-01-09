@@ -9,8 +9,7 @@ link-citations: true
 keep-md: true
 output-file: README
 project:
-  type: default
-  output-dir: ../
+  execute-dir: project
 ---
 
 # Scalable Surveillance of E-Cigarette Products on Instagram and TikTok Using Computer Vision
