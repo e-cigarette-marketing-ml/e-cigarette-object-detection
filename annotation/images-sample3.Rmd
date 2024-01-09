@@ -1,0 +1,208 @@
+---
+title: "Images sample 3"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## Setup
+
+```{r random_sample}
+#install.packages("here")
+library(dplyr)
+library(stringr)
+library(here)
+#path to script:
+#~/R_Codes/ecig-vaping/annotation
+```
+
+## Find files
+
+```{r find_files}
+
+# Organize our directories into a list.
+dirs = list(base = here("data-raw/vape/collection/appended_scrape_download/Instagram"))
+
+#defining path to the image folder
+dirs$photos = paste0(dirs$base, "/Photos")
+
+
+images = list.files(path = dirs$photos, full.names = TRUE)
+head(images)
+length(images)#21,186
+
+# creating dataframe for character "images"
+df <- data.frame("number" = seq(length(images)),
+                 "image" = images,
+                 stringsAsFactors = FALSE)#21186
+
+# duplicating columns with image name
+df$image_file = basename(df$image)#removing path 
+
+head(df$image_file)
+
+df$year = as.integer(substr(df$image_file, 1, 4))
+head(df$year)
+table(df$year)
+
+head(df$image_file)
+
+# https://stackoverflow.com/questions/54836518/how-to-remove-the-first-three-characters-from-every-row-in-a-column-in-r
+# Replace first 9 characters with an empty string ""
+df$username <- gsub("^.{0,9}", "", df$image_file)
+head(df$username)
+
+# https://statisticsglobe.com/r-remove-characters-before-or-after-point-in-string
+# remove everything after "-"
+df$username = gsub("\\-.*", "", df$username)  
+table(df$username, useNA = "ifany")
+
+
+
+```
+
+## Removing all images selected for sample 1 and sample 2 from Photos
+
+
+```{r removing sample 1 and 2 from photos}
+library(data.table)
+
+#reading in second training sample of 200 images
+sample2 = read.csv("~/R_Codes/ecig-vaping/annotation/sample2_200.csv")
+
+#anti-joining Sample 2 (200 images) from the full sample in photos (21,186)
+matched2 = anti_join(df,sample2,by="image_file")#20,986 remains
+
+############. ******** line 69 = 73 should be a standard procedure for anti-join for future annotaion samples, line 79- 109 was for the first sample with the old image naming convention 
+
+
+## reading in csv with the first sample
+sample1 = read.csv("~/R_Codes/ecig-vaping/annotation/training_sample_591_metadata.csv")
+
+#matching naming convention to the newer annotation samples, removing everything before ==
+sample1$image_file = gsub(".*\\=", "", sample1$images)
+#remove everything after _
+sample1$image_file = gsub("\\_.*", "", sample1$image_file)  
+#remove dahses
+sample1$image_file = gsub("-", "", sample1$image_file)
+#renaming the column formatted as yyyymmdd
+colnames(sample1)[6] = "image_match"
+
+# https://stackoverflow.com/questions/54836518/how-to-remove-the-first-three-characters-from-every-row-in-a-column-in-r
+#removing everything after == to only keep username
+sample1$username = gsub("\\==.*", "", sample1$images) 
+
+#creating numerator for each duplicated username and image_match as they are not duplicates
+sample1_11 = sample1 %>% 
+    # build grouping by combination of variables
+    group_by(image_match, username) %>%
+    # add row number which works per group due to prior grouping
+    mutate(duplicateID = row_number()) %>%
+    # ungroup to prevent unexpected behaviour down stream
+    ungroup()
+
+sample1_11$joinedname2 = paste(sample1_11$username, sample1_11$duplicateID) #concotaneting date of the post and username to #create a unique post identifier
+sample1_11$joinedname2 = gsub(" ", "_", sample1_11$joinedname2)
+
+sample1_11$joinedname3 = paste(sample1_11$joinedname2, sample1_11$image_match) #concotaneting date of the post and username to #create a unique post identifier
+sample1_11$joinedname3 = gsub(" ", "_", sample1_11$joinedname3)
+
+#write.csv(sample1_11, "first_sample588_update.csv")
+```
+
+
+########### creating a new IG image collection folder Photos_20432 (N=20,432) from which the first two annotation samples were removed (N=588 + N = 200)
+
+```{r }
+## taking a sample of 20986 from which 200 for annoation sample 2 were removed and creating numerated IDs similarly to the sample1_11 dataframe (first sample)
+matched_first= matched_first %>% 
+    # build grouping by combination of variables
+    group_by(image_match, username) %>%
+    # add row number which works per group due to prior grouping
+    mutate(duplicateID = row_number()) %>%
+    # ungroup to prevent unexpected behaviour down stream
+    ungroup()
+
+###20986 sample
+matched_first$joinedname2 = paste(matched_first$username, matched_first$duplicateID) #concotaneting date of the post and username to #create a unique post identifier
+matched_first$joinedname2 = gsub(" ", "_", matched_first$joinedname2)
+
+matched_first$joinedname3 = paste(matched_first$joinedname2, matched_first$image_match) #concotaneting date of the post and username to #create a unique post identifier
+matched_first$joinedname3 = gsub(" ", "_", matched_first$joinedname3)
+
+###selecting images minus first and second sample
+matched_ttt = anti_join(matched_first, sample1_11, by="joinedname3")
+table(matched_ttt$username)
+table(matched_first$username)
+table(sample1_11$username)
+
+```
+## Sampling
+
+```{r sample}
+
+
+#selecting only 2021 and only US influencers from 
+df_sel2 = matched_ttt %>%
+  filter(year == 2021)
+df_sel2 = df_sel2 %>%
+  filter(username %in% c("_caralovely", "a_kidz", "billytricks", "bobalyn", "drewdirps", "vaperz_edge", "vapetyler"))
+table(df_sel2$username)
+
+set.seed(12351)
+sample3_fixed = df_sel2 %>% group_by(username) %>% slice_sample(n = 50)
+table(sample3_fixed$username) # 254 images from 7 influencers
+
+head(sample3$image)
+```
+
+## Copy files
+
+```{r}
+
+(sample_dir = here("data-raw/vape/annotation/images-sample3-254/"))
+
+#working,  but recording to ~/R_Codes/ecig-vaping/julia 
+for (filename in sample3_fixed$image) {
+   cat("Copying file to:", filename, "\n")
+   # Create path to image in the existing main directory, using paste0() - or skip if the filename variable is already the full image path
+   # Create path to where the image should be copied to, using paste0() and possibly basename()
+   # Use file.copy() to copy the existing image into the subdirectory
+  newfile = paste0(sample_dir, basename(filename))
+  file.copy(filename, newfile, overwrite = TRUE, recursive = FALSE,
+          copy.mode = TRUE, copy.date = FALSE)
+}
+
+```
+
+## Save results
+
+```{r save_result}
+#records to ~/R_Codes/ecig-vaping/data-raw/vape/annotation/images-sample3-249
+save(sample3_fixed, df_sel, 
+     file = paste0(sample_dir, "images-sample3-254.RData"))
+
+# Contains 2 objects: df_sel, sample3
+load(paste0(sample_dir, "images-sample3-254.RData"))
+
+#records to ~/R_Codes/ecig-vaping/annotation
+write.csv(sample3_fixed,"sample3_254.csv")
+
+```
+
+#creating a new folder containing full sample of files with new naming convention 
+```{r photos minus sample1 and 2}
+
+(sample_dir = here("data-raw/vape/collection/appended_scrape_download/Instagram/Photos_20432/"))
+
+for (filename in matched_ttt$image) {
+   cat("Copying file to:", filename, "\n")
+   # Create path to image in the existing main directory, using paste0() - or skip if the filename variable is already the full image path
+   # Create path to where the image should be copied to, using paste0() and possibly basename()
+   # Use file.copy() to copy the existing image into the subdirectory
+  newfile = paste0(sample_dir, basename(filename))
+  file.copy(filename, newfile, overwrite = TRUE, recursive = FALSE,
+          copy.mode = TRUE, copy.date = FALSE)
+}
+
+

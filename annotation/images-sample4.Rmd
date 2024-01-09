@@ -1,0 +1,123 @@
+---
+title: "Images annotation sample 4"
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Find images
+
+We expect to find 1,472 images
+
+```{r find_images}
+
+source_dir = here::here('data-raw/vape/collection/appended_scrape_download/ig_warning_labels/Photos')
+
+# Filenames should end in .jpg or .png
+extension_pattern = "\\.(jpg|png)$"
+
+images = list.files(path = source_dir, full.names = TRUE,
+                    pattern = extension_pattern,
+                    ignore.case = TRUE)
+cat("Found images:", length(images))
+
+# Create a dataframe to begin tracking results.
+df = data.frame(source_files = images)
+head(df)
+```
+
+## Extract metadata
+
+```{r extract_metadata}
+# Year, ymd, account
+df$year = gsub("^.*==(\\d{4})-.*$", "\\1",
+               df$source_files,
+               perl = TRUE)
+
+# Review year distribution.
+table(df$year, useNA = "ifany")
+
+df$date = lubridate::ymd(gsub("^.*==(\\d{4})-(\\d{2})-(\\d{2}).*$", "\\1-\\2-\\3",
+               df$source_files,
+               perl = TRUE))
+
+df$account = gsub("^.*/([^/=]+)==.*$", "\\1",
+                  df$source_files,
+                  perl = TRUE)
+
+# Review account distribution
+table(df$account)
+
+# Review account and year distribution.
+table(df$account, df$year, useNA = "ifany")
+
+head(df)
+```
+
+## Specify/create destination directory
+
+```{r dest_dir}
+(dest_dir = here::here('data-raw/vape/annotation/images-sample4-1472'))
+
+if (!dir.exists(dest_dir)) {
+  cat("Created destination dir:", dest_dir)
+  dir.create(dest_dir)
+} else {
+  cat("Destination dir already exists.")
+}
+```
+
+## Copy to annotation dir
+
+```{r copy_images}
+for (image_i in images) {
+  new_file = paste0(dest_dir, '/', basename(image_i))
+  file.copy(image_i, new_file, copy.mode = TRUE, copy.date = TRUE)
+}
+
+# Check files at destination
+new_images =
+  list.files(path = dest_dir,
+             full.names = TRUE,
+             pattern = extension_pattern, 
+             ignore.case = TRUE)
+
+cat("Images in destination dir:", length(new_images))
+
+df$dest_files = new_images
+```
+
+## Upload into v7
+
+Following https://docs.v7labs.com/docs/import-data-with-cli-commands
+
+Run manually with the vape environment activated:
+
+darwin dataset push annotatevape/training-data /home/ck37/projects/ecig-vaping/data-raw/vape/annotation/images-sample4-1472
+
+```{r v7_upload, eval = FALSE}
+
+# TODO: get darwin upload working directly in R, which will require activating
+# the right conda environment, or possibly using reticulate.
+system2(command = "darwin",
+        args    = c("--help"))
+```
+
+## Save result
+
+```{r save_result}
+dim(df)
+str(df)
+head(df)
+
+# Save in project directory, and also in sample directory.
+save(df, file = here::here("data/sample4.RData"))
+save(df, file = paste0(dest_dir, "/sample4.RData"))
+```
+

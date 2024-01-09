@@ -1,0 +1,10 @@
+1 box
+2 e-cigarette brand name
+3 e-juice
+4 e-juice flavor
+5 mod
+6 pod
+7 smoke cloud
+8 synthetic nicotine label
+9 warning label nicotine
+10 warning label nicotine-free

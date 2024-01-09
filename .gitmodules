@@ -1,0 +1,12 @@
+[submodule "external/mmdetection"]
+	path = external/mmdetection
+	url = git@github.com:open-mmlab/mmdetection.git
+[submodule "external/darwin-py"]
+	path = external/darwin-py
+	url = git@github.com:ck37/darwin-py.git
+[submodule "external/mmcv"]
+	path = external/mmcv
+	url = git@github.com:open-mmlab/mmcv.git
+[submodule "external/mmdet-for-yolo"]
+	path = external/mmdet-for-yolo
+	url = https://github.com/open-mmlab/mmdetection.git

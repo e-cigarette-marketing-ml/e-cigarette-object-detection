@@ -1,0 +1,28 @@
+---
+title: "training_vs_sampling"
+output: html_document
+---
+
+## to separate the full sample from the annotation sample
+
+```{r r training vs testing samples}
+
+#Example: to separate the full sample (N= 16084 posts) from the annotation sample (n=200 posts), matched: n=15884 posts
+matched = anti_join(df,sample2,by="image_file")
+```
+
+## 
+
+```{r}
+
+```
+
+## 
+
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+

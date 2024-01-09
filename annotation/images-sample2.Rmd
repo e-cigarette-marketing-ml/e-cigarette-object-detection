@@ -1,0 +1,113 @@
+---
+title: "Images sample 2"
+output: html_document
+---
+
+## Setup
+
+```{r random_sample}
+#install.packages("here")
+library(dplyr)
+library(stringr)
+library(here)
+#path to script:
+#~/R_Codes/ecig-vaping/annotation
+```
+
+## Find files
+
+```{r find_files}
+
+# Organize our directories into a list.
+dirs = list(base = here("data-raw/vape/collection/appended_scrape_download/Instagram"))
+
+#defining path to the image folder
+dirs$photos = paste0(dirs$base, "/Photos")
+
+images = list.files(path = dirs$photos, full.names = TRUE)
+head(images)
+length(images)
+
+# creating dataframe for character "images"
+df <- data.frame("number" = seq(length(images)),
+                 "image" = images,
+                 stringsAsFactors = FALSE)
+
+# duplicating columns with image name
+df$image_file = basename(df$image)#removing path 
+
+head(df$image_file)
+
+df$year = as.integer(substr(df$image_file, 1, 4))
+head(df$year)
+table(df$year)
+
+head(df$image_file)
+
+# https://stackoverflow.com/questions/54836518/how-to-remove-the-first-three-characters-from-every-row-in-a-column-in-r
+# Replace first 9 characters with an empty string ""
+df$username <- gsub("^.{0,9}", "", df$image_file)
+head(df$username)
+
+# https://statisticsglobe.com/r-remove-characters-before-or-after-point-in-string
+# remove everything after "-"
+df$username = gsub("\\-.*", "", df$username)  
+table(df$username, useNA = "ifany")
+
+# remove all images earlier than 2018
+
+## selecting US and EU influencer for training model out of the 35 influencers not to include too many Indonesians
+df_sel = df %>%
+  filter(username %in% c("_caralovely", "billytricks", "psilosx", "vaperz_edge")) %>%
+  filter(year %in% c(2019, 2020, 2021))
+
+
+
+
+```
+
+## Sampling
+
+```{r sample}
+
+# selecting random 50 from each group of influencer - this is what we need
+set.seed(12350)
+sample2 = df_sel %>% group_by(username) %>% slice_sample(n = 50)
+table(sample2$username) # 200 images from 4 influencers
+
+#For the loop you could do something like this (change $image_filename to the name of the column that contains the image paths):
+
+head(sample2$image)
+```
+
+## Copy files
+
+```{r}
+
+(sample_dir = here("data-raw/vape/annotation/images-sample2-200/"))
+
+#working,  but recording to ~/R_Codes/ecig-vaping/julia 
+for (filename in sample2$image) {
+   cat("Copying file to:", filename, "\n")
+   # Create path to image in the existing main directory, using paste0() - or skip if the filename variable is already the full image path
+   # Create path to where the image should be copied to, using paste0() and possibly basename()
+   # Use file.copy() to copy the existing image into the subdirectory
+  newfile = paste0(sample_dir, basename(filename))
+  file.copy(filename, newfile, overwrite = TRUE, recursive = FALSE,
+          copy.mode = TRUE, copy.date = FALSE)
+}
+
+```
+
+## Save results
+
+```{r save_result}
+save(sample2, df_sel, 
+     file = paste0(sample_dir, "images-sample2-200.RData"))
+
+# Contains 2 objects: df_sel, sample2
+load(paste0(sample_dir, "images-sample2-200.RData"))
+
+```
+
+

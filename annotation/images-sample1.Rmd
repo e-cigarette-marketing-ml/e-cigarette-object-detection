@@ -1,0 +1,164 @@
+---
+title: "Selecting a random image sample for training a multilabel deep learning model"
+output: .Rmd
+---
+
+
+
+```{r random_sample, eval = FALSE}
+library(magick)
+library(dplyr)
+library(stringr)
+#path to script on personal machine:
+#/Users/juliavassey/Desktop/PhDfolder/STUDY_VAPE/NIH/NIH_award/Kleardata/Herbert_extracts
+#path to server script: ~/R_Codes/ecig-vaping/annotation
+
+# Organize our directories into a list.
+#dirs = list(base = "/Users/juliavassey/Desktop/PhDfolder/STUDY_VAPE/NIH/NIH_award/Kleardata/Herbert_extracts")
+
+# Organize our directories into a list.
+dirs = list(base = here("data-raw/vape/collection/appended_scrape_download/Instagram"))
+
+#defining path to the image folder
+dirs$photos = paste0(dirs$base, "/Photos(Old)")
+
+images = list.files(path = dirs$photos, full.names = TRUE)
+head(images)
+length(images)
+
+# creating dataframe for character "images"
+df <- data.frame("number" = seq(length(images)),
+                 "image" = images,
+                 stringsAsFactors = FALSE)#5585
+
+# duplicating columns with image name
+df$image_file = basename(df$image)#removing path 
+
+head(df$image_file)
+
+# https://stackoverflow.com/questions/54836518/how-to-remove-the-first-three-characters-from-every-row-in-a-column-in-r
+# Replace first 9 characters with an empty string ""
+df$year <- gsub("^.{0,9}", "", df$image_file)
+df$year = gsub("\\-.*", "", df$year) 
+df$username = gsub("\\==.*", "", df$image_file) 
+
+#matching naming convention to the newer annotation samples, removing everything before ==
+df$image_match = gsub(".*\\=", "", df$image_file)
+#remove everything after _
+df$image_match = gsub("\\_.*", "", df$image_match)  
+#remove dahses
+df$image_match = gsub("-", "", df$image_match)
+
+
+#concataneting columns in sample 1
+df$joinedname = paste(df$username, df$image_match)##concotaneting date of the post and username to #create a unique post identifier
+df$joinedname = gsub(" ", "_", df$joinedname)#creating _ istead of empty space
+
+matched_first = copy(matched2)
+#creating a column just like in sample 1 yyyymmdd
+matched_first$image_match = gsub("\\-.*", "", matched_first$image_file)  
+matched_first$joinedname = paste(matched_first$username, matched_first$image_match) #concotaneting date of the post and username to #create a unique post identifier
+matched_first$joinedname = gsub(" ", "_", matched_first$joinedname)#creating _ instead of empty space
+
+
+
+# https://statisticsglobe.com/r-remove-characters-before-or-after-point-in-string
+# remove everything after "-"
+df$username = gsub("\\-.*", "", df$username)  
+table(df$username, useNA = "ifany")
+?anti_join
+
+#although turned out we don't need a stratified random sample
+
+#splitting images to training and test set in a directory
+#split = sample.split(dirs, SplitRatio = 0.8)
+#training_set = subset(dirs$train, split == TRUE)
+#test_set = subset(dirs$test, split == FALSE)
+
+#simple random sample from image folder
+#set.seed(1239)
+#test2 = sample(x=images, size=600, replace = FALSE, prob = NULL)
+#head(test2)  
+#?sample
+
+# stratified Random Sampling - this will create uneven distribution of images not needed for training sample
+#set.seed(2345)
+#sample_st=x3 %>% slice_sample(weight_by = count, n = 600)
+#head(sample_st)
+#table(sample_st$images2)
+
+#selecting random 50 from each group of influencer - this is what we need
+set.seed(12348)
+df_sample1=df %>% group_by(username) %>% slice_sample(n = 50)
+table(df_sample1$username)
+
+
+#For creating the subdirectory of images you'll want to use file.copy(), but in a loop where you extract each of the image file paths from the original directory, use paste0() to create a filepath to the new subdirectory, then pass those two files into file.copy().
+
+#For the loop you could do something like this (change $image_filename to the name of the column that contains the image paths):
+
+for (filename in sample_st3$image) {
+   cat("Copying", filename, "\n")
+   # Create path to image in the existing main directory, using paste0() - or skip if the filename variable is already the full image path
+   # Create path to where the image should be copied to, using paste0() and possibly basename()
+   # Use file.copy() to copy the existing image into the subdirectory
+  dirs$photos = paste0(dirs$base,"/deep_learning_training/training")
+  file.copy(filename, dirs$photos, overwrite = TRUE, recursive = FALSE,
+          copy.mode = TRUE, copy.date = FALSE)
+}
+
+dirs$photos = paste0(dirs$base,"/deep_learning_training/training")
+length(filename)
+head(filename)
+
+?file.
+file.copy(filename, dirs$photos, overwrite = TRUE, recursive = FALSE,
+          copy.mode = TRUE, copy.date = FALSE)
+?file.copy
+?cat
+
+#removing three 2014-2015 files accidently left in the folder, initial training samle has 588 images from 12 influencers
+sample_st4 = sample_st3[-c(51:53),]
+
+write.csv(sample_st4, "training_sample_591_metadata.csv")
+
+
+
+
+
+sample1_11 = sample1 %>% 
+    # build grouping by combination of variables
+    group_by(image_match, username) %>%
+    # add row number which works per group due to prior grouping
+    mutate(duplicateID = row_number()) %>%
+    # ungroup to prevent unexpected behaviour down stream
+    ungroup()
+
+sample1_11$joinedname2 = paste(sample1_11$username, sample1_11$duplicateID) #concotaneting date of the post and username to #create a unique post identifier
+sample1_11$joinedname2 = gsub(" ", "_", sample1_11$joinedname2)
+
+sample1_11$joinedname3 = paste(sample1_11$joinedname2, sample1_11$image_match) #concotaneting date of the post and username to #create a unique post identifier
+sample1_11$joinedname3 = gsub(" ", "_", sample1_11$joinedname3)
+
+
+matched_first= matched_first %>% 
+    # build grouping by combination of variables
+    group_by(image_match, username) %>%
+    # add row number which works per group due to prior grouping
+    mutate(duplicateID = row_number()) %>%
+    # ungroup to prevent unexpected behaviour down stream
+    ungroup()
+
+matched_first$joinedname2 = paste(matched_first$username, matched_first$duplicateID) #concotaneting date of the post and username to #create a unique post identifier
+matched_first$joinedname2 = gsub(" ", "_", matched_first$joinedname2)
+
+matched_first$joinedname3 = paste(matched_first$joinedname2, matched_first$image_match) #concotaneting date of the post and username to #create a unique post identifier
+matched_first$joinedname3 = gsub(" ", "_", matched_first$joinedname3)
+
+matched_ttt = anti_join(matched_first, sample1_11, by="joinedname3")
+table(matched_ttt$username)
+table(matched_first$username)
+table(sample1_11$username)
+
+```
+
