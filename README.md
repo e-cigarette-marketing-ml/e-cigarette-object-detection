@@ -2,7 +2,7 @@
 <div class="column-margin">
 
 <img src="readme/vaping-demo.gif"
-data-fig-alt="Vaping computer vision demo" data-fig-align="right" />
+data-fig-alt="Vaping computer vision demo" data-fig-align="right" align="right" />
 
 </div>
 
